@@ -85,18 +85,26 @@ public class CentralControllerAgent extends Agent {
             if (batteryFlexibility != null) {
                 batteryStates[counter][0] = batteryFlexibility.getSender().getName();
                 batteryStates[counter][1] = batteryFlexibility.getContent();
-                System.out.println(batteryStates[counter][0]+" is in state " + batteryStates[counter][1]);
                 counter++;
             }
         }
 
         @Override
         public boolean done() {
+            boolean done = false;
             if (batteryStates == null) {
-                return false;
-            } else {
-                return counter == batteryStates.length;
+                done = false;
+            } else if (counter == batteryStates.length) {
+                done =  true;
+                int disconnectedBatteries = 0;
+                for (int i = 0; i < batteryStates.length; i++) {
+                    if (batteryStates[i][1].equals("PLUGGED_FULL") || batteryStates[i][1].equals("PLUGGED_CHARGING")) {
+                        disconnectedBatteries++;
+                    }
+                }
+                System.out.println("The amount of contribution made is: " + disconnectedBatteries + " batteries");
             }
+            return done;
         }
     }
 }
