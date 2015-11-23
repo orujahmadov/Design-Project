@@ -26,6 +26,8 @@ public class CentralControllerAgent extends Agent {
 
     private String[][] batteryStates;
 
+    private ControllerGUI controllerGUI;
+
     protected void setup() {
 
         // Printout a welcome message
@@ -39,7 +41,7 @@ public class CentralControllerAgent extends Agent {
             }
         });
 
-        ControllerGUI controllerGUI = new ControllerGUI(this, new RequestAvailableFlexibility());
+        controllerGUI = new ControllerGUI(this, new RequestAvailableFlexibility());
         controllerGUI.showGUI();
         // Perform the request
         addBehaviour(new GetBatteryStates());
@@ -112,7 +114,7 @@ public class CentralControllerAgent extends Agent {
                         disconnectedBatteries++;
                     }
                 }
-                System.out.println("The amount of contribution made is: " + disconnectedBatteries + " batteries");
+                controllerGUI.getLabel().setText(String.valueOf(disconnectedBatteries) + " batteries connected");
             }
             return done;
         }
