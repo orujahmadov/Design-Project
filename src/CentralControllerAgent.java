@@ -114,7 +114,7 @@ public class CentralControllerAgent extends Agent {
                         disconnectedBatteries++;
                     }
                 }
-                controllerGUI.getLabel().setText(String.valueOf(disconnectedBatteries) + " batteries connected");
+                controllerGUI.getLabel().setText(String.valueOf(disconnectedBatteries) + " batteries disconnected");
             }
             return done;
         }
