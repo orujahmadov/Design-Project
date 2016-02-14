@@ -23,17 +23,22 @@ public class BatteryAgent extends Agent {
     // The current charge of the battery in percent
     private int currentCharge;
 
+    //Current station battery connected
+    private ChargingStation currentStation;
+
 
     protected void setup() {
 
         registerThisAgent();
+        addRandomBatteryStation();
+        addRandomWeight();
         addRandomBatteryState();
         addRandomChargePercent();
 
         // Printout a welcome message
         System.out.println("Battery " + getAID().getName() + " is ready.");
 
-        //THIS BEHAVIOUR MANUALLY CHARGING BATTERY + 1% in every 6 seconds
+        //THIS BEHAVIOUR MANUALLY CHARGING BATTERY + 1% in every 6 seconds for public, 4% for private
         addBehaviour(new TickerBehaviour(this, 6000) {
             @Override
             protected void onTick() {
@@ -41,10 +46,10 @@ public class BatteryAgent extends Agent {
                     currentCharge += 0;
                 } else if (currentState == PLUGGED_CHARGING) {
                     if (currentCharge == 100) {
-                        currentCharge+=0;
+                        currentCharge += 0;
                         setBatteryState(PLUGGED_FULL);
                     } else {
-                        currentCharge+=1;
+                        currentCharge += currentStation == ChargingStation.PUBLIC ? 4 : 1;
                     }
                 }
             }
@@ -66,10 +71,13 @@ public class BatteryAgent extends Agent {
         dfd.addServices(sd);
         try {
             DFService.register(this, dfd);
-        }
-        catch (FIPAException fe) {
+        } catch (FIPAException fe) {
             fe.printStackTrace();
         }
+    }
+
+    private void addRandomWeight() {
+        Random random = new Random();
     }
 
     private void addRandomChargePercent() {
@@ -83,6 +91,12 @@ public class BatteryAgent extends Agent {
         setBatteryState(currentState);
     }
 
+    private void addRandomBatteryStation() {
+        Random random = new Random();
+        int r = random.nextInt(2);
+        setBatteryStation(r);
+    }
+
 
     public class ResponseAvailableFlexibility extends CyclicBehaviour {
 
@@ -94,10 +108,10 @@ public class BatteryAgent extends Agent {
                 String response = "";
                 if (currentState == PLUGGED_CHARGING || currentState == PLUGGED_FULL) {
                     replyMessage.setPerformative(ACLMessage.AGREE);
-                    response+=currentState==PLUGGED_CHARGING?"PLUGGED_CHARGING":"PLUGGED_FULL";
+                    response += currentState == PLUGGED_CHARGING ? "PLUGGED_CHARGING" : "PLUGGED_FULL";
                 } else if (currentState == UNPLUGGED || currentState == WAITING) {
                     replyMessage.setPerformative(ACLMessage.CANCEL);
-                    response+=currentState==UNPLUGGED?"UNPLUGGED":"WAITING";
+                    response += currentState == UNPLUGGED ? "UNPLUGGED" : "WAITING";
                 }
                 replyMessage.setContent(response);
                 myAgent.send(replyMessage);
@@ -105,6 +119,19 @@ public class BatteryAgent extends Agent {
                 block();
             }
         }
+    }
+
+    private int getRemainingChargeTime(BatteryAgent agent) {
+
+        int remainingTime = 0;
+
+        if (currentStation == ChargingStation.PRIVATE) {
+            remainingTime = (100 - currentCharge) * 15;
+        } else {
+            remainingTime = (100 - currentCharge) * 60;
+        }
+
+        return remainingTime;
     }
 
     private void setBatteryState(int state) {
@@ -124,8 +151,12 @@ public class BatteryAgent extends Agent {
         }
     }
 
-    private int getBatteryState(){
-        return currentState;
+    private void setBatteryStation(int random) {
+        if (random == 1) {
+            this.currentStation = ChargingStation.PUBLIC;
+        } else {
+            this.currentStation = ChargingStation.PRIVATE;
+        }
     }
 
     // Put agent clean-up operations here
@@ -133,13 +164,13 @@ public class BatteryAgent extends Agent {
         // Deregister from the yellow pages
         try {
             DFService.deregister(this);
-        }
-        catch (FIPAException fe) {
+        } catch (FIPAException fe) {
             fe.printStackTrace();
         }
 
         // Printout a dismissal message
-        System.out.println("Battery-agent "+getAID().getName()+" terminating.");
+        System.out.println("Battery-agent " + getAID().getName() + " terminating.");
     }
+
 
 }

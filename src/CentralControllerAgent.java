@@ -11,10 +11,6 @@ import jade.lang.acl.ACLMessage;
 
 public class CentralControllerAgent extends Agent {
 
-    private double capacity = 0;
-    private double overallDemand = 0;
-    private boolean isDemandPeak = false;
-
     //BOOLEAN VARIABLE USED TO CHECK WHETHER ALL RESPONSES RECEIVED FROM BATTERIES
     boolean done = false;
 
@@ -31,10 +27,10 @@ public class CentralControllerAgent extends Agent {
     protected void setup() {
 
         // Printout a welcome message
-        System.out.println("Yo, wassup? Controller " + getAID().getName() + " is ready.");
+        System.out.println("hey, I " + getAID().getName() + " is ready.");
 
         //GET LIST OF BATTERY AGENTS
-        addBehaviour(new WakerBehaviour(this, 2000) {
+        addBehaviour(new WakerBehaviour(this, 20000) {
             @Override
             protected void handleElapsedTimeout() {
                 updateBatteryAgents(myAgent);
@@ -43,6 +39,7 @@ public class CentralControllerAgent extends Agent {
 
         controllerGUI = new ControllerGUI(this, new RequestAvailableFlexibility());
         controllerGUI.showGUI();
+
         // Perform the request
         addBehaviour(new GetBatteryStates());
     }
@@ -84,6 +81,7 @@ public class CentralControllerAgent extends Agent {
                 addBehaviour(new GetBatteryStates());
             }
         }
+
     }
 
 
@@ -115,6 +113,7 @@ public class CentralControllerAgent extends Agent {
                     }
                 }
                 controllerGUI.getLabel().setText(String.valueOf(disconnectedBatteries) + " batteries disconnected");
+
             }
             return done;
         }
