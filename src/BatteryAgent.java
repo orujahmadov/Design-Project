@@ -1,9 +1,8 @@
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.TickerBehaviour;
-import jade.domain.DFService;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.domain.AMSService;
+import jade.domain.FIPAAgentManagement.AMSAgentDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -39,7 +38,7 @@ public class BatteryAgent extends Agent {
         System.out.println("Battery " + getAID().getName() + " is ready.");
 
         //THIS BEHAVIOUR MANUALLY CHARGING BATTERY + 1% in every 6 seconds for public, 4% for private
-        addBehaviour(new TickerBehaviour(this, 6000) {
+        addBehaviour(new TickerBehaviour(this, 3000) {
             @Override
             protected void onTick() {
                 if (currentState == UNPLUGGED || currentState == WAITING) {
@@ -49,8 +48,18 @@ public class BatteryAgent extends Agent {
                         currentCharge += 0;
                         setBatteryState(PLUGGED_FULL);
                     } else {
-                        currentCharge += currentStation == ChargingStation.PUBLIC ? 4 : 1;
+                        currentCharge += currentStation == ChargingStation.PUBLIC ? 10 : 2;
                     }
+                }
+            }
+        });
+
+        //THIS BEHAVIOUR MANUALLY DESCHARGING BATTERY - 1% in every 6 seconds
+        addBehaviour(new TickerBehaviour(this, 6000) {
+            @Override
+            protected void onTick() {
+                if (currentState == UNPLUGGED && currentCharge > 0) {
+                    currentCharge -= 1;
                 }
             }
         });
@@ -63,16 +72,12 @@ public class BatteryAgent extends Agent {
     private void registerThisAgent() {
 
         // Register the battery agent in the yellow pages
-        DFAgentDescription dfd = new DFAgentDescription();
+        AMSAgentDescription dfd = new AMSAgentDescription();
         dfd.setName(getAID());
-        ServiceDescription sd = new ServiceDescription();
-        sd.setType("power-modulation");
-        sd.setName("DemandResponse");
-        dfd.addServices(sd);
         try {
-            DFService.register(this, dfd);
+            AMSService.register(this, dfd);
         } catch (FIPAException fe) {
-            fe.printStackTrace();
+//            fe.printStackTrace();
         }
     }
 
@@ -121,14 +126,14 @@ public class BatteryAgent extends Agent {
         }
     }
 
-    private int getRemainingChargeTime(BatteryAgent agent) {
+    private int getRemainingChargeTime() {
 
         int remainingTime = 0;
 
-        if (currentStation == ChargingStation.PRIVATE) {
-            remainingTime = (100 - currentCharge) * 15;
-        } else {
-            remainingTime = (100 - currentCharge) * 60;
+        if (currentState == PLUGGED_FULL) {
+            remainingTime = 0;
+        } else if (currentState == PLUGGED_CHARGING) {
+            remainingTime = (100 - currentCharge) * ((currentStation == ChargingStation.PRIVATE)?15:60);
         }
 
         return remainingTime;
@@ -163,7 +168,7 @@ public class BatteryAgent extends Agent {
     protected void takeDown() {
         // Deregister from the yellow pages
         try {
-            DFService.deregister(this);
+            AMSService.deregister(this);
         } catch (FIPAException fe) {
             fe.printStackTrace();
         }

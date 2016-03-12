@@ -1,13 +1,15 @@
 import jade.core.AID;
 import jade.core.Agent;
-import jade.core.behaviours.Behaviour;
-import jade.core.behaviours.OneShotBehaviour;
-import jade.core.behaviours.WakerBehaviour;
-import jade.domain.DFService;
+import jade.core.behaviours.*;
+import jade.domain.AMSService;
+import jade.domain.FIPAAgentManagement.AMSAgentDescription;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
+import jade.domain.FIPAAgentManagement.SearchConstraints;
+
+import java.io.*;
 
 public class CentralControllerAgent extends Agent {
 
@@ -24,33 +26,41 @@ public class CentralControllerAgent extends Agent {
 
     private ControllerGUI controllerGUI;
 
+    private BufferedWriter out;
+
+    private int bufferCounter = 0;
+
     protected void setup() {
+
+        //CREATE TEXT FILE TO WRITE RESULTS
+        try {
+            out = new BufferedWriter(new FileWriter("file.txt"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         // Printout a welcome message
         System.out.println("hey, I " + getAID().getName() + " is ready.");
 
         //GET LIST OF BATTERY AGENTS
-        addBehaviour(new WakerBehaviour(this, 20000) {
+        addBehaviour(new WakerBehaviour(this, 5000) {
             @Override
             protected void handleElapsedTimeout() {
                 updateBatteryAgents(myAgent);
             }
         });
 
-        controllerGUI = new ControllerGUI(this, new RequestAvailableFlexibility());
+        controllerGUI = new ControllerGUI(this, new RequestAvailableFlexibility(this, 1000));
         controllerGUI.showGUI();
-
-        // Perform the request
-        addBehaviour(new GetBatteryStates());
     }
 
     private void updateBatteryAgents(Agent myAgent) {
-        DFAgentDescription template = new DFAgentDescription();
-        ServiceDescription sd = new ServiceDescription();
-        sd.setType("power-modulation");
-        template.addServices(sd);
+        AMSAgentDescription template = new AMSAgentDescription();
+        SearchConstraints searchConstraints = new SearchConstraints();
+        searchConstraints.setMaxResults(672L);
+        searchConstraints.setMaxDepth(672L);
         try {
-            DFAgentDescription[] result = DFService.search(myAgent, template);
+            AMSAgentDescription[] result = AMSService.search(myAgent, template, searchConstraints);
             System.out.println("Found the following battery agents:");
             batteryAgents = new AID[result.length];
             agents = result.length;
@@ -65,15 +75,20 @@ public class CentralControllerAgent extends Agent {
         }
     }
 
-    public class RequestAvailableFlexibility extends OneShotBehaviour {
+    public class RequestAvailableFlexibility extends TickerBehaviour {
+
+        public RequestAvailableFlexibility(Agent a, long period) {
+            super(a, period);
+        }
 
         @Override
-        public void action() {
+        protected void onTick() {
             ACLMessage message = new ACLMessage(ACLMessage.REQUEST);
             for (int i = 0; i < batteryAgents.length; i++) {
                 message.addReceiver(batteryAgents[i]);
             }
             message.setContent("Can you shut down?");
+            done = true;
             myAgent.send(message);
             if (done == true) {
                 done = false;
@@ -108,14 +123,28 @@ public class CentralControllerAgent extends Agent {
                 done =  true;
                 int disconnectedBatteries = 0;
                 for (int i = 0; i < batteryStates.length; i++) {
-                    if (batteryStates[i][1].equals("PLUGGED_FULL") || batteryStates[i][1].equals("PLUGGED_CHARGING")) {
-                        disconnectedBatteries++;
+                    if(batteryStates[i][1] != null) {
+                        if (batteryStates[i][1].equals("PLUGGED_FULL") || batteryStates[i][1].equals("PLUGGED_CHARGING")) {
+                            disconnectedBatteries++;
+                        }
                     }
                 }
-                controllerGUI.getLabel().setText(String.valueOf(disconnectedBatteries) + " batteries disconnected");
+
+                try {
+                    out.write(disconnectedBatteries+"\n");
+                    if (bufferCounter > 200 ) {
+                        out.close();
+                    } else {
+                        bufferCounter++;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
 
             }
             return done;
         }
     }
+
 }
