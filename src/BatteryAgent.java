@@ -15,7 +15,6 @@ public class BatteryAgent extends Agent {
     private static int UNPLUGGED = 0;
     private static int PLUGGED_CHARGING = 1;
     private static int PLUGGED_FULL = 2;
-    private static int WAITING = 3;
 
     private int currentState;
 
@@ -38,27 +37,27 @@ public class BatteryAgent extends Agent {
         System.out.println("Battery " + getAID().getName() + " is ready.");
 
         //THIS BEHAVIOUR MANUALLY CHARGING BATTERY + 1% in every 6 seconds for public, 4% for private
-        addBehaviour(new TickerBehaviour(this, 3000) {
+        addBehaviour(new TickerBehaviour(this, 9000) {
             @Override
             protected void onTick() {
-                if (currentState == UNPLUGGED || currentState == WAITING) {
+                if (currentState == UNPLUGGED) {
                     currentCharge += 0;
                 } else if (currentState == PLUGGED_CHARGING) {
                     if (currentCharge == 100) {
                         currentCharge += 0;
                         setBatteryState(PLUGGED_FULL);
                     } else {
-                        currentCharge += currentStation == ChargingStation.PUBLIC ? 10 : 2;
+                        currentCharge += currentStation == ChargingStation.PUBLIC ? 5 : 1;
                     }
                 }
             }
         });
 
         //THIS BEHAVIOUR MANUALLY DESCHARGING BATTERY - 1% in every 6 seconds
-        addBehaviour(new TickerBehaviour(this, 6000) {
+        addBehaviour(new TickerBehaviour(this, 24000) {
             @Override
             protected void onTick() {
-                if (currentState == UNPLUGGED && currentCharge > 0) {
+                if (currentState == UNPLUGGED && currentCharge == 100) {
                     currentCharge -= 1;
                 }
             }
@@ -114,7 +113,7 @@ public class BatteryAgent extends Agent {
                 if (currentState == PLUGGED_CHARGING || currentState == PLUGGED_FULL) {
                     replyMessage.setPerformative(ACLMessage.AGREE);
                     response += currentState == PLUGGED_CHARGING ? "PLUGGED_CHARGING" : "PLUGGED_FULL";
-                } else if (currentState == UNPLUGGED || currentState == WAITING) {
+                } else if (currentState == UNPLUGGED) {
                     replyMessage.setPerformative(ACLMessage.CANCEL);
                     response += currentState == UNPLUGGED ? "UNPLUGGED" : "WAITING";
                 }
@@ -149,9 +148,6 @@ public class BatteryAgent extends Agent {
                 break;
             case 2:
                 this.currentState = PLUGGED_FULL;
-                break;
-            case 3:
-                this.currentState = WAITING;
                 break;
         }
     }

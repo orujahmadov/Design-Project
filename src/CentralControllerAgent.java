@@ -43,13 +43,14 @@ public class CentralControllerAgent extends Agent {
         System.out.println("hey, I " + getAID().getName() + " is ready.");
 
         //GET LIST OF BATTERY AGENTS
-        addBehaviour(new WakerBehaviour(this, 5000) {
+        addBehaviour(new WakerBehaviour(this, 10000) {
             @Override
             protected void handleElapsedTimeout() {
                 updateBatteryAgents(myAgent);
             }
         });
 
+        addBehaviour(new GetBatteryStates());
         controllerGUI = new ControllerGUI(this, new RequestAvailableFlexibility(this, 1000));
         controllerGUI.showGUI();
     }
@@ -57,8 +58,8 @@ public class CentralControllerAgent extends Agent {
     private void updateBatteryAgents(Agent myAgent) {
         AMSAgentDescription template = new AMSAgentDescription();
         SearchConstraints searchConstraints = new SearchConstraints();
-        searchConstraints.setMaxResults(672L);
-        searchConstraints.setMaxDepth(672L);
+        searchConstraints.setMaxResults(1000L);
+        searchConstraints.setMaxDepth(1000L);
         try {
             AMSAgentDescription[] result = AMSService.search(myAgent, template, searchConstraints);
             System.out.println("Found the following battery agents:");
@@ -88,7 +89,6 @@ public class CentralControllerAgent extends Agent {
                 message.addReceiver(batteryAgents[i]);
             }
             message.setContent("Can you shut down?");
-            done = true;
             myAgent.send(message);
             if (done == true) {
                 done = false;
@@ -132,7 +132,7 @@ public class CentralControllerAgent extends Agent {
 
                 try {
                     out.write(disconnectedBatteries+"\n");
-                    if (bufferCounter > 200 ) {
+                    if (bufferCounter > 400 ) {
                         out.close();
                     } else {
                         bufferCounter++;

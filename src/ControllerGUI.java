@@ -16,14 +16,15 @@ public class ControllerGUI extends JFrame {
         panel.setLayout(new GridBagLayout());
         JButton startButton = new JButton("Request available flexibility");
         startButton.setBounds(50, 60, 80, 30);
+        label = new JLabel("TEST");
         startButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 agent.addBehaviour(behaviour);
+                label.setText("STARTED");
             }
         });
         panel.add(startButton);
-        label = new JLabel("TEST");
         panel.add(label);
         getContentPane().add(panel);
 
