@@ -1,15 +1,17 @@
 import jade.core.AID;
 import jade.core.Agent;
-import jade.core.behaviours.*;
+import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.TickerBehaviour;
+import jade.core.behaviours.WakerBehaviour;
 import jade.domain.AMSService;
 import jade.domain.FIPAAgentManagement.AMSAgentDescription;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.domain.FIPAAgentManagement.SearchConstraints;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
-import jade.domain.FIPAAgentManagement.SearchConstraints;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class CentralControllerAgent extends Agent {
 
@@ -34,7 +36,7 @@ public class CentralControllerAgent extends Agent {
 
         //CREATE TEXT FILE TO WRITE RESULTS
         try {
-            out = new BufferedWriter(new FileWriter("file.txt"));
+            out = new BufferedWriter(new FileWriter("simulation1.txt"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -124,15 +126,19 @@ public class CentralControllerAgent extends Agent {
                 int disconnectedBatteries = 0;
                 for (int i = 0; i < batteryStates.length; i++) {
                     if(batteryStates[i][1] != null) {
-                        if (batteryStates[i][1].equals("PLUGGED_FULL") || batteryStates[i][1].equals("PLUGGED_CHARGING")) {
+                        if (batteryStates[i][1].split(":")[0].equals("PLUGGED_FULL")) {
                             disconnectedBatteries++;
+                        } else if (batteryStates[i][1].split(":")[0].equals("PLUGGED_CHARGING")) {
+                            if (Integer.parseInt(batteryStates[i][1].split(":")[1]) > 50) {
+                                disconnectedBatteries++;
+                            }
                         }
                     }
                 }
 
                 try {
                     out.write(disconnectedBatteries+"\n");
-                    if (bufferCounter > 400 ) {
+                    if (bufferCounter > 1000 ) {
                         out.close();
                     } else {
                         bufferCounter++;

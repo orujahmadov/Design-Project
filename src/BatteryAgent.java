@@ -44,21 +44,32 @@ public class BatteryAgent extends Agent {
                     currentCharge += 0;
                 } else if (currentState == PLUGGED_CHARGING) {
                     if (currentCharge == 100) {
-                        currentCharge += 0;
                         setBatteryState(PLUGGED_FULL);
                     } else {
                         currentCharge += currentStation == ChargingStation.PUBLIC ? 5 : 1;
                     }
+                } else if (currentState == PLUGGED_FULL) {
+                    //if battery charged fully, it might be unplugged right away or hold in that state for a bit
+                    //we will assign 50/50 probability to this case
+                    Random random = new Random();
+                    if (random.nextInt(2) == 0) {
+                        setBatteryState(UNPLUGGED);
+                    } else {
+                        //hold on this state
+                    }
+
                 }
             }
         });
 
-        //THIS BEHAVIOUR MANUALLY DESCHARGING BATTERY - 1% in every 6 seconds
+        //THIS BEHAVIOUR MANUALLY DESCHARGING BATTERY - 1% in every 24 seconds
         addBehaviour(new TickerBehaviour(this, 24000) {
             @Override
             protected void onTick() {
-                if (currentState == UNPLUGGED && currentCharge == 100) {
+                if (currentState == UNPLUGGED && currentCharge > 0) {
                     currentCharge -= 1;
+                } else if (currentCharge == 0) {
+                    setBatteryState(PLUGGED_CHARGING);
                 }
             }
         });
@@ -91,7 +102,7 @@ public class BatteryAgent extends Agent {
 
     private void addRandomBatteryState() {
         Random random = new Random();
-        currentState = random.nextInt(4);
+        currentState = random.nextInt(3);
         setBatteryState(currentState);
     }
 
@@ -112,10 +123,12 @@ public class BatteryAgent extends Agent {
                 String response = "";
                 if (currentState == PLUGGED_CHARGING || currentState == PLUGGED_FULL) {
                     replyMessage.setPerformative(ACLMessage.AGREE);
-                    response += currentState == PLUGGED_CHARGING ? "PLUGGED_CHARGING" : "PLUGGED_FULL";
+                    response += currentState == PLUGGED_CHARGING ? "PLUGGED_CHARGING:"+currentCharge : "PLUGGED_FULL:100";
                 } else if (currentState == UNPLUGGED) {
                     replyMessage.setPerformative(ACLMessage.CANCEL);
-                    response += currentState == UNPLUGGED ? "UNPLUGGED" : "WAITING";
+                    response += "UNPLUGGED:x";
+                } else {
+                    System.out.println("WTF");
                 }
                 replyMessage.setContent(response);
                 myAgent.send(replyMessage);
@@ -148,6 +161,7 @@ public class BatteryAgent extends Agent {
                 break;
             case 2:
                 this.currentState = PLUGGED_FULL;
+                this.currentCharge = 100;
                 break;
         }
     }
