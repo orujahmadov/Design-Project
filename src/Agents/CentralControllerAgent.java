@@ -1,3 +1,5 @@
+package Agents;
+
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
@@ -12,6 +14,10 @@ import jade.lang.acl.ACLMessage;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+
+import GUI.ControllerGUI;
+
+import Enums.ChargingStation;
 
 public class CentralControllerAgent extends Agent {
 

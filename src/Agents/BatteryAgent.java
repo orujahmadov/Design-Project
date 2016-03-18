@@ -1,3 +1,6 @@
+package Agents;
+
+import Enums.ChargingStation;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.TickerBehaviour;
@@ -63,7 +66,7 @@ public class BatteryAgent extends Agent {
         });
 
         //THIS BEHAVIOUR MANUALLY DESCHARGING BATTERY - 1% in every 24 seconds
-        addBehaviour(new TickerBehaviour(this, 24000) {
+        addBehaviour(new TickerBehaviour(this, 48000) {
             @Override
             protected void onTick() {
                 if (currentState == UNPLUGGED && currentCharge > 0) {

@@ -1,3 +1,5 @@
+package GUI;
+
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 
@@ -9,7 +11,7 @@ import java.awt.event.ActionListener;
 public class ControllerGUI extends JFrame {
 
     JLabel label;
-    ControllerGUI(Agent agent, Behaviour behaviour) {
+    public ControllerGUI(Agent agent, Behaviour behaviour) {
         super(agent.getLocalName());
 
         JPanel panel = new JPanel();
