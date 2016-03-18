@@ -1,3 +1,4 @@
+import GUI.ControllerGUI;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
@@ -8,14 +9,7 @@ import jade.domain.FIPAAgentManagement.AMSAgentDescription;
 import jade.domain.FIPAAgentManagement.SearchConstraints;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
-
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-
-import GUI.ControllerGUI;
 import jfreeChart.ChartFrame;
-
 import org.jfree.data.xy.XYSeries;
 import org.jfree.ui.RefineryUtilities;
 
@@ -134,7 +128,8 @@ public class CentralControllerAgent extends Agent {
                 }
 
                 xySeries.add(bufferCounter, disconnectedBatteries);
-                if (bufferCounter > 100) {
+                controllerGUI.getLabel().setText("Remaining time "+(200-bufferCounter));
+                if (bufferCounter >= 200) {
                     bufferCounter = 1;
                     displayChart(xySeries);
                 } else {
