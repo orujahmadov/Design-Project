@@ -1,5 +1,3 @@
-package Agents;
-
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
@@ -16,8 +14,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import GUI.ControllerGUI;
+import jfreeChart.ChartFrame;
 
-import Enums.ChargingStation;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.ui.RefineryUtilities;
 
 public class CentralControllerAgent extends Agent {
 
@@ -34,18 +34,10 @@ public class CentralControllerAgent extends Agent {
 
     private ControllerGUI controllerGUI;
 
-    private BufferedWriter out;
-
-    private int bufferCounter = 0;
+    private int bufferCounter = 1;
+    XYSeries xySeries = new XYSeries("demo");
 
     protected void setup() {
-
-        //CREATE TEXT FILE TO WRITE RESULTS
-        try {
-            out = new BufferedWriter(new FileWriter("simulation1.txt"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         // Printout a welcome message
         System.out.println("hey, I " + getAID().getName() + " is ready.");
@@ -78,8 +70,7 @@ public class CentralControllerAgent extends Agent {
                 batteryAgents[i] = result[i].getName();
                 System.out.println(batteryAgents[i].getName());
             }
-        }
-        catch (FIPAException fe) {
+        } catch (FIPAException fe) {
             fe.printStackTrace();
         }
     }
@@ -128,10 +119,10 @@ public class CentralControllerAgent extends Agent {
             if (batteryStates == null) {
                 done = false;
             } else if (counter == batteryStates.length) {
-                done =  true;
+                done = true;
                 int disconnectedBatteries = 0;
                 for (int i = 0; i < batteryStates.length; i++) {
-                    if(batteryStates[i][1] != null) {
+                    if (batteryStates[i][1] != null) {
                         if (batteryStates[i][1].split(":")[0].equals("PLUGGED_FULL")) {
                             disconnectedBatteries++;
                         } else if (batteryStates[i][1].split(":")[0].equals("PLUGGED_CHARGING")) {
@@ -142,21 +133,25 @@ public class CentralControllerAgent extends Agent {
                     }
                 }
 
-                try {
-                    out.write(disconnectedBatteries+"\n");
-                    if (bufferCounter > 1000 ) {
-                        out.close();
-                    } else {
-                        bufferCounter++;
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                xySeries.add(bufferCounter, disconnectedBatteries);
+                if (bufferCounter > 100) {
+                    bufferCounter = 1;
+                    displayChart(xySeries);
+                } else {
+                    bufferCounter++;
                 }
 
 
             }
             return done;
         }
+    }
+
+    private static void displayChart(XYSeries xy) {
+        ChartFrame chart = new ChartFrame("demo", xy);
+        chart.pack();
+        RefineryUtilities.centerFrameOnScreen(chart);
+        chart.setVisible(true);
     }
 
 }

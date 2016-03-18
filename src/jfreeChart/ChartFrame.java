@@ -63,9 +63,10 @@ import java.util.Random;
 /**
  * A simple demonstration application to create a bar chart.
  */
-class Chart extends ApplicationFrame {
+public class ChartFrame extends ApplicationFrame {
 
     private static final long serialVersionUID = 1L;
+    private static XYSeries xySeries;
 
     static {
         // set a theme using the new shadow generator feature available in
@@ -79,8 +80,9 @@ class Chart extends ApplicationFrame {
      *
      * @param title  the frame title.
      */
-    public Chart(String title) {
+    public ChartFrame(String title, XYSeries xySeries) {
         super(title);
+        this.xySeries = xySeries;
         IntervalXYDataset dataset = createDataset();
         JFreeChart chart = createHistogram(dataset);
         ChartPanel chartPanel = new ChartPanel(chart, false);
@@ -97,12 +99,8 @@ class Chart extends ApplicationFrame {
      *
      * @return The dataset.
      */
-    private static IntervalXYDataset createDataset() {
-        final XYSeries series = new XYSeries("Cars");
-        for(int i=0; i <= 100; i++) {
-            Random random = new Random();
-            series.add(i,random.nextInt(1000));
-        }
+    private IntervalXYDataset createDataset() {
+        final XYSeries series = this.xySeries;
         final XYSeriesCollection dataset = new XYSeriesCollection(series);
         return dataset;
     }
@@ -131,16 +129,6 @@ class Chart extends ApplicationFrame {
         renderer.setDrawBarOutline(false);
         chart.getLegend().setFrame(BlockBorder.NONE);
         return chart;
-    }
-
-    /**
-     * Starting point for the demonstration application.
-     */
-    public static void initialize() {
-        Chart demo = new Chart("JFreeChart: Histogram");
-        demo.pack();
-        RefineryUtilities.centerFrameOnScreen(demo);
-        demo.setVisible(true);
     }
 
 }
