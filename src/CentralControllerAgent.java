@@ -20,15 +20,14 @@ public class CentralControllerAgent extends Agent {
 
     //indicate the number of battery agents in network
     int agents = 0;
+    int numberOfSamples = 200;
 
     //list of all known battery agents
     private AID[] batteryAgents;
-
     private String[][] batteryStates;
-
     private ControllerGUI controllerGUI;
-
     private int bufferCounter = 1;
+
     XYSeries xySeries = new XYSeries("demo");
 
     protected void setup() {
@@ -83,7 +82,7 @@ public class CentralControllerAgent extends Agent {
             }
             message.setContent("Can you shut down?");
             myAgent.send(message);
-            if (done == true) {
+            if (done == true && bufferCounter >= numberOfSamples) {
                 done = false;
                 batteryStates = new String[agents][2];
                 addBehaviour(new GetBatteryStates());
@@ -128,8 +127,8 @@ public class CentralControllerAgent extends Agent {
                 }
 
                 xySeries.add(bufferCounter, disconnectedBatteries);
-                controllerGUI.getLabel().setText("Remaining time "+(200-bufferCounter));
-                if (bufferCounter >= 200) {
+                controllerGUI.getLabel().setText("Remaining time: "+(numberOfSamples-bufferCounter));
+                if (bufferCounter >= numberOfSamples) {
                     bufferCounter = 1;
                     displayChart(xySeries);
                 } else {
