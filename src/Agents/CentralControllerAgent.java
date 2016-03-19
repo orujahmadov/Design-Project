@@ -1,3 +1,5 @@
+package Agents;
+
 import GUI.ControllerGUI;
 import jade.core.AID;
 import jade.core.Agent;
@@ -16,11 +18,11 @@ import org.jfree.ui.RefineryUtilities;
 public class CentralControllerAgent extends Agent {
 
     //BOOLEAN VARIABLE USED TO CHECK WHETHER ALL RESPONSES RECEIVED FROM BATTERIES
-    boolean done = false;
+    boolean done = true;
 
     //indicate the number of battery agents in network
     int agents = 0;
-    int numberOfSamples = 200;
+    int numberOfSamples = 0;
 
     //list of all known battery agents
     private AID[] batteryAgents;
@@ -43,7 +45,6 @@ public class CentralControllerAgent extends Agent {
             }
         });
 
-        addBehaviour(new GetBatteryStates());
         controllerGUI = new ControllerGUI(this, new RequestAvailableFlexibility(this, 1000));
         controllerGUI.showGUI();
     }
@@ -82,7 +83,7 @@ public class CentralControllerAgent extends Agent {
             }
             message.setContent("Can you shut down?");
             myAgent.send(message);
-            if (done == true && bufferCounter >= numberOfSamples) {
+            if (done == true && bufferCounter <= numberOfSamples) {
                 done = false;
                 batteryStates = new String[agents][2];
                 addBehaviour(new GetBatteryStates());
@@ -111,31 +112,31 @@ public class CentralControllerAgent extends Agent {
             done = false;
             if (batteryStates == null) {
                 done = false;
-            } else if (counter == batteryStates.length) {
-                done = true;
-                int disconnectedBatteries = 0;
-                for (int i = 0; i < batteryStates.length; i++) {
-                    if (batteryStates[i][1] != null) {
-                        if (batteryStates[i][1].split(":")[0].equals("PLUGGED_FULL")) {
-                            disconnectedBatteries++;
-                        } else if (batteryStates[i][1].split(":")[0].equals("PLUGGED_CHARGING")) {
-                            if (Integer.parseInt(batteryStates[i][1].split(":")[1]) > 50) {
+            } else {
+                if (counter == batteryStates.length) {
+                    done = true;
+                    int disconnectedBatteries = 0;
+                    for (int i = 0; i < batteryStates.length; i++) {
+                        if (batteryStates[i][1] != null) {
+                            if (batteryStates[i][1].split(":")[0].equals("PLUGGED_FULL")) {
                                 disconnectedBatteries++;
+                            } else if (batteryStates[i][1].split(":")[0].equals("PLUGGED_CHARGING")) {
+                                if (Integer.parseInt(batteryStates[i][1].split(":")[1]) > 50) {
+                                    disconnectedBatteries++;
+                                }
                             }
                         }
                     }
+
+                    xySeries.add(bufferCounter, disconnectedBatteries);
+                    controllerGUI.getLabel().setText("Remaining time: " + (numberOfSamples - bufferCounter));
+                    if (bufferCounter >= numberOfSamples) {
+                        bufferCounter = 1;
+                        displayChart(xySeries);
+                    } else {
+                        bufferCounter++;
+                    }
                 }
-
-                xySeries.add(bufferCounter, disconnectedBatteries);
-                controllerGUI.getLabel().setText("Remaining time: "+(numberOfSamples-bufferCounter));
-                if (bufferCounter >= numberOfSamples) {
-                    bufferCounter = 1;
-                    displayChart(xySeries);
-                } else {
-                    bufferCounter++;
-                }
-
-
             }
             return done;
         }
@@ -146,6 +147,10 @@ public class CentralControllerAgent extends Agent {
         chart.pack();
         RefineryUtilities.centerFrameOnScreen(chart);
         chart.setVisible(true);
+    }
+
+    public void setNumberOfSamples(int numberOfSamples) {
+        this.numberOfSamples = numberOfSamples;
     }
 
 }

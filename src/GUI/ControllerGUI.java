@@ -1,5 +1,6 @@
 package GUI;
 
+import Agents.CentralControllerAgent;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 
@@ -7,8 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+
 
 public class ControllerGUI extends JFrame {
 
@@ -67,6 +67,7 @@ public class ControllerGUI extends JFrame {
         startButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                ((CentralControllerAgent)agent).setNumberOfSamples(Integer.parseInt(samplesTextField.getText()));
                 agent.addBehaviour(behaviour);
                 startButton.setText("STARTED");
             }

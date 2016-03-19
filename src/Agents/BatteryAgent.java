@@ -1,3 +1,5 @@
+package Agents;
+
 import Enums.ChargingStation;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
