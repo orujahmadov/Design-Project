@@ -35,9 +35,9 @@ public class CentralControllerAgent extends Agent {
     private ControllerGUI controllerGUI;
     private int bufferCounter = 1;
 
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH.mm");
-
     XYSeries xySeries = new XYSeries("demo");
+
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH.mm");
 
     protected void setup() {
 
@@ -132,7 +132,7 @@ public class CentralControllerAgent extends Agent {
             } else {
                 if (counter == batteryStates.length) {
                     done = true;
-                    double disconnectedBatteries = 0;
+                    int disconnectedBatteries = 0;
                     for (int i = 0; i < batteryStates.length; i++) {
                         if (batteryStates[i][1] != null) {
                             if (batteryStates[i][1].split(":")[0].equals("PLUGGED_FULL")) {
@@ -145,8 +145,8 @@ public class CentralControllerAgent extends Agent {
                         }
                     }
 
-              //      Double currentTime = Double.parseDouble(simpleDateFormat.format(new Date()))*100;
-                    xySeries.add(bufferCounter, disconnectedBatteries);
+                    Double currentTime = Double.parseDouble(simpleDateFormat.format(new Date()))*100;
+                    xySeries.add(new Double(currentTime), new Double(disconnectedBatteries));
                     controllerGUI.getLabel().setText("Remaining Time: " + (numberOfSamples - bufferCounter));
                     if (bufferCounter >= numberOfSamples) {
                         bufferCounter = -1;

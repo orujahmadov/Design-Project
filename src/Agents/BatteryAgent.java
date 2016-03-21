@@ -10,6 +10,8 @@ import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Random;
 
 public class BatteryAgent extends Agent {
@@ -27,40 +29,37 @@ public class BatteryAgent extends Agent {
     //Current station battery connected
     private ChargingStation currentStation;
 
+    private int currentPriority;
+
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH.mm");
+
 
     protected void setup() {
 
         registerThisAgent();
+
         addRandomBatteryStation();
-        addRandomWeight();
+        addRandomPriority();
         addRandomBatteryState();
         addRandomChargePercent();
 
         // Printout a welcome message
         System.out.println("Battery " + getAID().getName() + " is ready.");
 
-        //THIS BEHAVIOUR MANUALLY CHARGING BATTERY + 1% in every 6 seconds for public, 4% for private
-        addBehaviour(new TickerBehaviour(this, 9000) {
+        //THIS BEHAVIOUR MANUALLY CHARGING BATTERY + 12% in every 10 mins for public, 5% for private
+        addBehaviour(new TickerBehaviour(this, 600000) {
             @Override
             protected void onTick() {
+
+                //IF UNPLUGGED, DON'T CHARGED
                 if (currentState == UNPLUGGED) {
                     currentCharge += 0;
                 } else if (currentState == PLUGGED_CHARGING) {
                     if (currentCharge == 100) {
                         setBatteryState(PLUGGED_FULL);
                     } else {
-                        currentCharge += currentStation == ChargingStation.PUBLIC ? 5 : 1;
+                        currentCharge += currentStation == ChargingStation.PUBLIC ? 12 : 5;
                     }
-                } else if (currentState == PLUGGED_FULL) {
-                    //if battery charged fully, it might be unplugged right away or hold in that state for a bit
-                    //we will assign 50/50 probability to this case
-                    Random random = new Random();
-                    if (random.nextInt(2) == 0) {
-                        setBatteryState(UNPLUGGED);
-                    } else {
-                        //hold on this state
-                    }
-
                 }
             }
         });
@@ -73,6 +72,19 @@ public class BatteryAgent extends Agent {
                     currentCharge -= 1;
                 } else if (currentCharge == 0) {
                     setBatteryState(PLUGGED_CHARGING);
+                }
+            }
+        });
+
+        //THIS BEHAVIOUR UPDATES BATTERY STATES DEPENDING ON THE TIME OF THE DAY
+        addBehaviour(new TickerBehaviour(this, 60000) {
+            @Override
+            protected void onTick() {
+              //WE WILL ASSUME EVERYONE CHARGES BEFORE BED LOL
+                if(Double.parseDouble(simpleDateFormat.format(new Date())) == 23.00) {
+                    setBatteryState(PLUGGED_CHARGING);
+                } else if(Double.parseDouble(simpleDateFormat.format(new Date())) == 8.00) {
+                    setBatteryState(UNPLUGGED);
                 }
             }
         });
@@ -94,8 +106,9 @@ public class BatteryAgent extends Agent {
         }
     }
 
-    private void addRandomWeight() {
+    private void addRandomPriority() {
         Random random = new Random();
+        currentPriority = random.nextInt(9) + 1;
     }
 
     private void addRandomChargePercent() {

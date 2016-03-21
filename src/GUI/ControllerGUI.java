@@ -54,12 +54,12 @@ public class ControllerGUI extends JFrame {
         JPanel infoPanel = new JPanel(new GridLayout(2,2));
         JLabel currentcharge = new JLabel("Current charge");
         JCheckBox samplesCheckbox = new JCheckBox();
-        JLabel chargingtime = new JLabel("Remaining charging time");
-        JCheckBox chargingCheckbox = new JCheckBox();
+        JLabel currentPriority = new JLabel("Current Priority");
+        JCheckBox priorityCheckbox = new JCheckBox();
         infoPanel.add(currentcharge);
         infoPanel.add(samplesCheckbox);
-        infoPanel.add(chargingtime);
-        infoPanel.add(chargingCheckbox);
+        infoPanel.add(currentPriority);
+        infoPanel.add(priorityCheckbox);
 
         JPanel controlPanel = new JPanel(new GridLayout(2,1));
         JButton startButton = new JButton("Start");
