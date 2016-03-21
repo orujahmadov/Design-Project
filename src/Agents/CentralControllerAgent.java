@@ -15,6 +15,9 @@ import jfreeChart.ChartFrame;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.ui.RefineryUtilities;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class CentralControllerAgent extends Agent {
 
     //BOOLEAN VARIABLE USED TO CHECK WHETHER ALL RESPONSES RECEIVED FROM BATTERIES
@@ -31,6 +34,8 @@ public class CentralControllerAgent extends Agent {
     private String[][] batteryStates;
     private ControllerGUI controllerGUI;
     private int bufferCounter = 1;
+
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH.mm");
 
     XYSeries xySeries = new XYSeries("demo");
 
@@ -95,7 +100,7 @@ public class CentralControllerAgent extends Agent {
             }
             message.setContent("Can you shut down?");
             myAgent.send(message);
-            if (done == true && bufferCounter <= numberOfSamples) {
+            if (done == true && bufferCounter !=-1) {
                 done = false;
                 batteryStates = new String[agents][2];
                 addBehaviour(new GetBatteryStates());
@@ -127,7 +132,7 @@ public class CentralControllerAgent extends Agent {
             } else {
                 if (counter == batteryStates.length) {
                     done = true;
-                    int disconnectedBatteries = 0;
+                    double disconnectedBatteries = 0;
                     for (int i = 0; i < batteryStates.length; i++) {
                         if (batteryStates[i][1] != null) {
                             if (batteryStates[i][1].split(":")[0].equals("PLUGGED_FULL")) {
@@ -140,10 +145,11 @@ public class CentralControllerAgent extends Agent {
                         }
                     }
 
+              //      Double currentTime = Double.parseDouble(simpleDateFormat.format(new Date()))*100;
                     xySeries.add(bufferCounter, disconnectedBatteries);
-                    controllerGUI.getLabel().setText("Remaining time: " + (numberOfSamples - bufferCounter));
+                    controllerGUI.getLabel().setText("Remaining Time: " + (numberOfSamples - bufferCounter));
                     if (bufferCounter >= numberOfSamples) {
-                        bufferCounter = 1;
+                        bufferCounter = -1;
                         displayChart(xySeries);
                     } else {
                         bufferCounter++;
