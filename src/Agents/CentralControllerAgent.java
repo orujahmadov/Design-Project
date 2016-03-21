@@ -19,10 +19,12 @@ public class CentralControllerAgent extends Agent {
 
     //BOOLEAN VARIABLE USED TO CHECK WHETHER ALL RESPONSES RECEIVED FROM BATTERIES
     boolean done = true;
+    boolean started = false;
 
     //indicate the number of battery agents in network
     int agents = 0;
     int numberOfSamples = 0;
+    int samplePeriod;
 
     //list of all known battery agents
     private AID[] batteryAgents;
@@ -45,8 +47,18 @@ public class CentralControllerAgent extends Agent {
             }
         });
 
-        controllerGUI = new ControllerGUI(this, new RequestAvailableFlexibility(this, 1000));
+        controllerGUI = new ControllerGUI(this);
         controllerGUI.showGUI();
+
+        addBehaviour(new TickerBehaviour(this, 100) {
+            @Override
+            protected void onTick() {
+                if(started) {
+                    myAgent.addBehaviour(new RequestAvailableFlexibility(myAgent, samplePeriod*1000));
+                    started  = false;
+                }
+            }
+        });
     }
 
     private void updateBatteryAgents(Agent myAgent) {
@@ -151,6 +163,14 @@ public class CentralControllerAgent extends Agent {
 
     public void setNumberOfSamples(int numberOfSamples) {
         this.numberOfSamples = numberOfSamples;
+    }
+
+    public void setStarted(boolean started) {
+        this.started = started;
+    }
+
+    public void setSamplePeriod(int samplePeriod) {
+        this.samplePeriod = samplePeriod;
     }
 
 }

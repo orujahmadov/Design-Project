@@ -1,1 +1,1 @@
-http://192.168.2.53:7778/acc
+http://wpa050015.wireless.mcgill.ca:7778/acc

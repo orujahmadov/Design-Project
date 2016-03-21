@@ -15,7 +15,7 @@ public class ControllerGUI extends JFrame {
     JLabel remainingTime;
     JFrame mainFrame;
 
-    public ControllerGUI(Agent agent, Behaviour behaviour) {
+    public ControllerGUI(Agent agent) {
         super(agent.getLocalName());
 
              /*
@@ -42,7 +42,7 @@ public class ControllerGUI extends JFrame {
         JLabel numberOfSamples = new JLabel("Number of samples");
         JTextField samplesTextField = new JTextField();
         samplesTextField.setMaximumSize(new Dimension(10,3));
-        JLabel frequencyOfSamples = new JLabel("Frequency of samples");
+        JLabel frequencyOfSamples = new JLabel("Frequency of samples (sec)");
         JTextField frequencyTextField = new JTextField();
         frequencyTextField.setMaximumSize(new Dimension(10,3));
         samplesPanel.add(numberOfSamples);
@@ -68,7 +68,8 @@ public class ControllerGUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ((CentralControllerAgent)agent).setNumberOfSamples(Integer.parseInt(samplesTextField.getText()));
-                agent.addBehaviour(behaviour);
+                ((CentralControllerAgent)agent).setSamplePeriod(Integer.parseInt(frequencyTextField.getText()));
+                ((CentralControllerAgent)agent).setStarted(true);
                 startButton.setText("STARTED");
             }
         });
