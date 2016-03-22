@@ -33,7 +33,7 @@ public class ControllerGUI extends JFrame {
         //Header panel
         JPanel headerPanel = new JPanel(new GridLayout(2,1));
         JLabel headerLabel = new JLabel("CONTROLLER");
-        JLabel headerTextLabel = new JLabel("Cusotmize simulation here");
+        JLabel headerTextLabel = new JLabel("Customize simulation here");
         headerPanel.add(headerLabel);
         headerPanel.add(headerTextLabel);
 
