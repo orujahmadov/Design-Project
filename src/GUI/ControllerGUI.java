@@ -53,11 +53,11 @@ public class ControllerGUI extends JFrame {
         //INFO TO EXCHANGE
         JPanel infoPanel = new JPanel(new GridLayout(2,2));
         JLabel currentcharge = new JLabel("Current charge");
-        JCheckBox samplesCheckbox = new JCheckBox();
+        JCheckBox currentChargeCheckbox = new JCheckBox();
         JLabel currentPriority = new JLabel("Current Priority");
         JCheckBox priorityCheckbox = new JCheckBox();
         infoPanel.add(currentcharge);
-        infoPanel.add(samplesCheckbox);
+        infoPanel.add(currentChargeCheckbox);
         infoPanel.add(currentPriority);
         infoPanel.add(priorityCheckbox);
 
@@ -69,6 +69,8 @@ public class ControllerGUI extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 ((CentralControllerAgent)agent).setNumberOfSamples(Integer.parseInt(samplesTextField.getText()));
                 ((CentralControllerAgent)agent).setSamplePeriod(Integer.parseInt(frequencyTextField.getText()));
+                ((CentralControllerAgent)agent).setCurrentCharge(currentChargeCheckbox.isSelected());
+                ((CentralControllerAgent)agent).setPriority(priorityCheckbox.isSelected());
                 ((CentralControllerAgent)agent).setStarted(true);
                 startButton.setText("STARTED");
             }

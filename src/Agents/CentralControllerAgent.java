@@ -23,6 +23,8 @@ public class CentralControllerAgent extends Agent {
     //BOOLEAN VARIABLE USED TO CHECK WHETHER ALL RESPONSES RECEIVED FROM BATTERIES
     boolean done = true;
     boolean started = false;
+    boolean addCurrentChargeToMessage = false;
+    boolean addPriorityToMessage = false;
 
     //indicate the number of battery agents in network
     int agents = 0;
@@ -58,9 +60,9 @@ public class CentralControllerAgent extends Agent {
         addBehaviour(new TickerBehaviour(this, 100) {
             @Override
             protected void onTick() {
-                if(started) {
-                    myAgent.addBehaviour(new RequestAvailableFlexibility(myAgent, samplePeriod*1000));
-                    started  = false;
+                if (started) {
+                    myAgent.addBehaviour(new RequestAvailableFlexibility(myAgent, samplePeriod * 1000));
+                    started = false;
                 }
             }
         });
@@ -100,7 +102,7 @@ public class CentralControllerAgent extends Agent {
             }
             message.setContent("Can you shut down?");
             myAgent.send(message);
-            if (done == true && bufferCounter !=-1) {
+            if (done == true && bufferCounter != -1) {
                 done = false;
                 batteryStates = new String[agents][2];
                 addBehaviour(new GetBatteryStates());
@@ -138,14 +140,22 @@ public class CentralControllerAgent extends Agent {
                             if (batteryStates[i][1].split(":")[0].equals("PLUGGED_FULL")) {
                                 disconnectedBatteries++;
                             } else if (batteryStates[i][1].split(":")[0].equals("PLUGGED_CHARGING")) {
-                                if (Integer.parseInt(batteryStates[i][1].split(":")[1]) > 50) {
-                                    disconnectedBatteries++;
+                                if (addCurrentChargeToMessage && addPriorityToMessage) {
+                                    if (Integer.parseInt(batteryStates[i][1].split(":")[1]) > 50 && Integer.parseInt(batteryStates[i][1].split(":")[2]) < 5) {
+                                        disconnectedBatteries++;
+                                    }
+                                } else if (addCurrentChargeToMessage && !addPriorityToMessage) {
+                                    if (Integer.parseInt(batteryStates[i][1].split(":")[1]) > 50) {
+                                        disconnectedBatteries++;
+                                    }
+                                } else if (!addCurrentChargeToMessage && !addPriorityToMessage) {
+                                    disconnectedBatteries ++;
                                 }
                             }
                         }
                     }
 
-                    Double currentTime = Double.parseDouble(simpleDateFormat.format(new Date()))*100;
+                    Double currentTime = Double.parseDouble(simpleDateFormat.format(new Date())) * 100;
                     xySeries.add(new Double(currentTime), new Double(disconnectedBatteries));
                     controllerGUI.getLabel().setText("Remaining Time: " + (numberOfSamples - bufferCounter));
                     if (bufferCounter >= numberOfSamples) {
@@ -177,6 +187,14 @@ public class CentralControllerAgent extends Agent {
 
     public void setSamplePeriod(int samplePeriod) {
         this.samplePeriod = samplePeriod;
+    }
+
+    public void setCurrentCharge(boolean addCurrentChargeToMessage) {
+        this.addCurrentChargeToMessage = addCurrentChargeToMessage;
+    }
+
+    public void setPriority(boolean addPriorityToMessage) {
+        this.addPriorityToMessage = addPriorityToMessage;
     }
 
 }

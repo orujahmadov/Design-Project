@@ -139,12 +139,10 @@ public class BatteryAgent extends Agent {
                 String response = "";
                 if (currentState == PLUGGED_CHARGING || currentState == PLUGGED_FULL) {
                     replyMessage.setPerformative(ACLMessage.AGREE);
-                    response += currentState == PLUGGED_CHARGING ? "PLUGGED_CHARGING:"+currentCharge : "PLUGGED_FULL:100";
+                    response += currentState == PLUGGED_CHARGING ? "PLUGGED_CHARGING:" + currentCharge + ":" + currentPriority: "PLUGGED_FULL:100" + ":" + currentPriority;
                 } else if (currentState == UNPLUGGED) {
                     replyMessage.setPerformative(ACLMessage.CANCEL);
                     response += "UNPLUGGED:x";
-                } else {
-                    System.out.println("WTF");
                 }
                 replyMessage.setContent(response);
                 myAgent.send(replyMessage);
